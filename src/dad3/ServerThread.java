@@ -15,9 +15,10 @@ public class ServerThread extends Thread
     private Socket socket;
     private BufferedReader in;
     private PrintWriter out;
-    private static Hashtable<String,String> usernames = new Hashtable<String,String>();
+    private static ArrayList<String> usernames = new ArrayList<String>();
+    private static ArrayList<Socket> currentUsers = new ArrayList<Socket>();
     private static HashSet<PrintWriter> writers = new HashSet<PrintWriter>();
-
+    
     public ServerThread(Socket socket)
     {
         this.socket = socket;
@@ -35,8 +36,6 @@ public class ServerThread extends Thread
             	Server.status.append("Incoming connection.\n");
                 out.println("SUBMITNAME");
                 username = in.readLine();
-                //out.println("RETURNIP");
-//                ipAddress = in.readLine();
                 if (username == null)
                 {
                     return;
@@ -45,14 +44,25 @@ public class ServerThread extends Thread
                 {
                     if (!usernames.contains(username))
                     {
-                        usernames.put(username,socket.getRemoteSocketAddress().toString());
+                        usernames.add(username);
                         break;
                     }
                 }
             }
-            out.println("NAMEACCEPTED");
+            //out.println("NAMEACCEPTED");
+            currentUsers.add(socket);
             writers.add(out);
             Server.status.append(username + " has connected to the chat via IP address of " + socket.getRemoteSocketAddress() + "\n");
+            
+            for (PrintWriter writer : writers)
+                {
+//                    out.println("MESSAGE " + username + ": " + input);
+
+                        System.out.println(usernames);
+                        writer.println("###" + usernames);
+                        writer.flush();
+
+                }
             
             while (true)
             {
@@ -61,11 +71,7 @@ public class ServerThread extends Thread
                 {
                     return;
                 }
-                for (PrintWriter writer : writers)
-                {
-                    writer.println("MESSAGE " + username + ": " + input);
-                    System.out.println(input);
-                }
+                
             }
         } 
         catch (IOException e)
@@ -77,6 +83,10 @@ public class ServerThread extends Thread
             if (username != null)
             {
                 usernames.remove(username);
+            }
+            if (socket != null)
+            {
+                currentUsers.remove(socket);
             }
             if (out != null)
             {

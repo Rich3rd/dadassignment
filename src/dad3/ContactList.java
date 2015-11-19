@@ -7,24 +7,31 @@ package dad3;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.Socket;
+import java.util.Arrays;
 import javax.swing.*;
 import javax.swing.event.*;
  
 /* ListDemo.java requires no other files. */
 public class ContactList extends JPanel
 {
-    private JList list;
+    static JList list;
+    Socket socket;
     private DefaultListModel listModel;
+    
+    BufferedReader in;
+    PrintWriter out;
  
     private static final String addString = "Add";
  
     public ContactList() {
         super(new BorderLayout());
  
-        listModel = new DefaultListModel();     //need to change to keep updating 
-        listModel.addElement("Jane Doe");
-        listModel.addElement("John Smith");
-        listModel.addElement("Kathy Green");
+        //
+        listModel = new DefaultListModel();      
  
         //Create the list and put it in a scroll pane.
         list = new JList(listModel);
@@ -33,15 +40,13 @@ public class ContactList extends JPanel
         list.setVisibleRowCount(5);
         JScrollPane listScrollPane = new JScrollPane(list);
  
+        //create buttons 
         JButton addButton = new JButton(addString);
         AddListener addListener = new AddListener(addButton);
         addButton.setActionCommand(addString);
         addButton.addActionListener(addListener);
         addButton.setEnabled(true);
- 
-        String name = listModel.getElementAt(list.getSelectedIndex()).toString(); //need to change 
-        
- 
+  
         //Create a panel that uses BoxLayout.
         JPanel buttonPane = new JPanel();
         buttonPane.setLayout(new BoxLayout(buttonPane,BoxLayout.LINE_AXIS));
@@ -51,9 +56,18 @@ public class ContactList extends JPanel
         add(buttonPane, BorderLayout.PAGE_END);
     }
  
- 
+    private String askName()
+        {
+            return JOptionPane.showInputDialog(null, "Choose a screen name:", "Screen name selection", JOptionPane.PLAIN_MESSAGE);
+        }
+    
+    private String askServerIPAddress()
+        {
+            return JOptionPane.showInputDialog(null, "Enter IP Address of the Server:", "Welcome to the Chat Messenger", JOptionPane.QUESTION_MESSAGE);
+        }
+     
     //This listener is shared by the text field and the hire button.
-    class AddListener implements ActionListener, DocumentListener {
+    class AddListener implements ActionListener{
         private boolean alreadyEnabled = false;
         private JButton button;
  
@@ -61,73 +75,26 @@ public class ContactList extends JPanel
             this.button = button;
         }
  
+        
         //Required by ActionListener.
-        public void actionPerformed(ActionEvent e) {
-            
+        public void actionPerformed(ActionEvent e) 
+        {
+         Chat_handler chat_handler = new Chat_handler(socket);
 
-        }
- 
-        //This method tests for string equality. You could certainly
-        //get more sophisticated about the algorithm.  For example,
-        //you might want to ignore white space and capitalization.
-        protected boolean alreadyInList(String name) {
-            return listModel.contains(name);
-        }
- 
-        //Required by DocumentListener.
-        public void insertUpdate(DocumentEvent e) {
-            enableButton();
-        }
- 
-        //Required by DocumentListener.
-        public void removeUpdate(DocumentEvent e) {
-            handleEmptyTextField(e);
-        }
- 
-        //Required by DocumentListener.
-        public void changedUpdate(DocumentEvent e) {
-            if (!handleEmptyTextField(e)) {
-                enableButton();
-            }
-        }
- 
-        private void enableButton() {
-            if (!alreadyEnabled) {
-                button.setEnabled(true);
-            }
-        }
- 
-        private boolean handleEmptyTextField(DocumentEvent e) {
-            if (e.getDocument().getLength() <= 0) {
-                button.setEnabled(false);
-                alreadyEnabled = false;
-                return true;
-            }
-            return false;
+                try {
+                    chat_handler.run();
+                    }
+                    catch(Exception s)
+                    {
+                        s.printStackTrace();
+                    }
+            
+        
         }
     }
- 
-    //This method is required by ListSelectionListener.
-//    public void valueChanged(ListSelectionEvent e) {
-//        if (e.getValueIsAdjusting() == false) {
-// 
-//            if (list.getSelectedIndex() == -1) {
-//            //No selection, disable fire button.
-//                fireButton.setEnabled(false);
-// 
-//            } else {
-//            //Selection, enable the fire button.
-//                addButton.setEnabled(true);
-//            }
-//        }
-//    }
- 
-    /**
-     * Create the GUI and show it.  For thread safety,
-     * this method should be invoked from the
-     * event-dispatching thread.
-     */
-    private static void createAndShowGUI() {
+
+
+    void createAndShowGUI() {
         //Create and set up the window.
         JFrame frame = new JFrame("Contact list");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -141,15 +108,47 @@ public class ContactList extends JPanel
         frame.pack();
         frame.setVisible(true);
     }
- 
-    public static void main(String[] args) {
-        //Schedule a job for the event-dispatching thread:
-        //creating and showing this application's GUI.
-        javax.swing.SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                createAndShowGUI();
+    
+    void run() throws Exception
+    {
+        String IPAddress = askServerIPAddress();
+        socket = new Socket(IPAddress, 1234);
+        in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        out = new PrintWriter(socket.getOutputStream(), true);
+        createAndShowGUI();
+        
+        while(true)
+        {
+            String MESSAGE = in.readLine();
+            if (MESSAGE.startsWith("SUBMITNAME"))
+            {
+                out.println(askName()); //send username to server 
             }
-        });
+            
+            else if(MESSAGE.startsWith("###"))
+            {
+                String TEMP1 = MESSAGE.substring(3);
+                TEMP1 = TEMP1.replace("[", "");
+                TEMP1 = TEMP1.replace("]", "");
+                
+                String[] CurrentUsers = TEMP1.split(", ");
+                list.setListData(CurrentUsers);
+            }
+        }         
+    }
+
+    
+    
+    public static void main (String[] args)
+    {
+        ContactList contactlist = new ContactList();
+        try{
+        contactlist.run();
+        }
+        catch (Exception e)
+        {
+        e.printStackTrace();
+        }
     }
 }
 
