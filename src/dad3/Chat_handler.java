@@ -11,10 +11,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
 
-public class Chat_handler implements Runnable{
+public class Chat_handler extends Thread{
     
-    public static boolean RIGHT_TO_LEFT = false;
-    private Socket socket;
+    Socket socket;
     BufferedReader in;
     PrintWriter out;
     
@@ -30,22 +29,20 @@ public class Chat_handler implements Runnable{
         textField.setEditable(false);
     }
         
-    public Chat_handler(Socket socket) 
-    {
-        this.socket = socket;
-    }
     
-    public Chat_handler()
-    {
+    public Chat_handler(final PrintWriter out, final String username, final GroupNumber)
+    {	
         textField.addActionListener(new ActionListener()
         {
             public void actionPerformed(ActionEvent e)
             {
-                out.println(textField.getText());
+                out.println("MESSAGE");
+                out.println(username + ": " + textField.getText());
                 textField.setText("");
             }
         });
     }
+    
     void createAndShowGUI() 
     {
         //Create and set up the window.
@@ -58,27 +55,27 @@ public class Chat_handler implements Runnable{
         textField.setEditable(true);
     }
     
-    
-    
-    public void run()
-    {
-        try{
-            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            out = new PrintWriter(socket.getOutputStream(), true);
-        
-        
-        if(in.readLine() != null)
-        {
-            String MESSAGE = in.readLine();
 
-            textArea.append(MESSAGE.substring(8) + "\n");
-            textArea.setCaretPosition(textArea.getDocument().getLength());
-        }
-        }
-        catch(Exception e)
-        {
-            e.printStackTrace();
-        }
-    }
+//    public void run()
+//    {
+//        try{
+//            createAndShowGUI();
+//            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+//            out = new PrintWriter(socket.getOutputStream(), true);
+//
+//            while(true)
+//            {
+//                String MESSAGE = in.readLine();
+//                
+//                textArea.append(MESSAGE.substring(8) + "\n");
+//                textArea.setCaretPosition(textArea.getDocument().getLength());
+//            }
+//
+//            }
+//        catch (Exception e)
+//        {
+//            e.printStackTrace();
+//        }
+//    }
 }
 

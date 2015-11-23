@@ -16,8 +16,8 @@ public class ServerThread extends Thread
     private BufferedReader in;
     private PrintWriter out;
     private static ArrayList<String> usernames = new ArrayList<String>();
-    private static ArrayList<Socket> currentUsers = new ArrayList<Socket>();
-    private static HashSet<PrintWriter> writers = new HashSet<PrintWriter>();
+//    private static ArrayList<Socket> currentUsers = new ArrayList<Socket>();
+    private static ArrayList<PrintWriter> writers = new ArrayList<PrintWriter>();
     
     public ServerThread(Socket socket)
     {
@@ -50,19 +50,16 @@ public class ServerThread extends Thread
                 }
             }
             //out.println("NAMEACCEPTED");
-            currentUsers.add(socket);
+            //currentUsers.add(socket);
             writers.add(out);
             Server.status.append(username + " has connected to the chat via IP address of " + socket.getRemoteSocketAddress() + "\n");
             
-            for (PrintWriter writer : writers)
-                {
-//                    out.println("MESSAGE " + username + ": " + input);
-
-                        System.out.println(usernames);
-                        writer.println("###" + usernames);
-                        writer.flush();
-
-                }
+            for (PrintWriter writer : writers) //send usernames to clients 
+            {
+                System.out.println(usernames);
+                writer.println("###" + usernames);
+                writer.flush();
+            }
             
             while (true)
             {
@@ -70,6 +67,30 @@ public class ServerThread extends Thread
                 if (input == null)
                 {
                     return;
+                }
+                
+                else if (input.startsWith("NEWCHAT"))
+                {
+                    ArrayList<Integer> chatUsers = new ArrayList<Integer>();
+                    ArrayList<PrintWriter> chatUsersWriters = new ArrayList<PrintWriter>();
+                    while (true)
+                    {
+                        input = in.readLine();
+                        if (input.startsWith("ENDSEND"))
+                        {
+                            break;
+                        }
+
+                        for (int i=0; i<usernames.size(); i++)
+                        {
+                            if (input.equals(usernames.get(i)))
+                            {
+                                chatUsers.add(i);
+                                chatUsersWriters.add(writers.get(i));
+                            }
+                        }
+                    }
+                    
                 }
                 
             }
@@ -83,10 +104,6 @@ public class ServerThread extends Thread
             if (username != null)
             {
                 usernames.remove(username);
-            }
-            if (socket != null)
-            {
-                currentUsers.remove(socket);
             }
             if (out != null)
             {
