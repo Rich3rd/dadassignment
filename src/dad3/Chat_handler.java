@@ -16,6 +16,7 @@ public class Chat_handler extends Thread{
     Socket socket;
     BufferedReader in;
     PrintWriter out;
+    int GroupNumber ;
     
     static JTextArea textArea = new JTextArea(25,50);
     static JTextField textField = new JTextField();
@@ -26,56 +27,57 @@ public class Chat_handler extends Thread{
         textArea.setEditable(false);
    
         pane.add(textField, BorderLayout.PAGE_END);
-        textField.setEditable(false);
+        textField.setEditable(true);
     }
         
     
-    public Chat_handler(final PrintWriter out, final String username, final GroupNumber)
+    public Chat_handler(final PrintWriter out, final String username, final int GroupNumber)
     {	
-        textField.addActionListener(new ActionListener()
-        {
-            public void actionPerformed(ActionEvent e)
-            {
-                out.println("MESSAGE");
-                out.println(username + ": " + textField.getText());
-                textField.setText("");
-            }
-        });
-    }
-    
-    void createAndShowGUI() 
-    {
         //Create and set up the window.
-        JFrame frame = new JFrame("Chat Client");
+        JFrame frame = new JFrame(GroupNumber + username + "Chat Client");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         //Set up the content pane.
         addComponentsToPane(frame.getContentPane());
         frame.pack();
         frame.setVisible(true);
         textField.setEditable(true);
+        textField.addActionListener(new ActionListener()
+        {
+            public void actionPerformed(ActionEvent e)
+            {
+                out.println("MESSAGE");
+                out.println(GroupNumber);
+                out.println(username + ": " + textField.getText());
+                textField.setText("");
+            }
+        });
     }
     
-
-//    public void run()
-//    {
-//        try{
-//            createAndShowGUI();
-//            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-//            out = new PrintWriter(socket.getOutputStream(), true);
-//
-//            while(true)
-//            {
-//                String MESSAGE = in.readLine();
-//                
-//                textArea.append(MESSAGE.substring(8) + "\n");
-//                textArea.setCaretPosition(textArea.getDocument().getLength());
-//            }
-//
-//            }
-//        catch (Exception e)
-//        {
-//            e.printStackTrace();
-//        }
-//    }
+    public void printMessage(String message)
+    {
+    	textArea.append(message + "\n");
+    }
+    
+    public int getGroupNumber()
+    {
+    	return this.GroupNumber;
+    }
+    
+    void createAndShowGUI() 
+    {
+        //Create and set up the window.
+        JFrame frame = new JFrame("Chat Client");
+        //frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        //Set up the content pane.
+        addComponentsToPane(frame.getContentPane());
+        frame.pack();
+        frame.setVisible(true);
+        textField.setEditable(true);
+    }
+   
+    public void run()
+    {
+        createAndShowGUI();
+    }
 }
 

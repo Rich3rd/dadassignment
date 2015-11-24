@@ -11,6 +11,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Arrays;
 import javax.swing.*;
 import javax.swing.event.*;
@@ -22,12 +23,14 @@ public class ContactList extends JPanel
     static Socket socket;
     private DefaultListModel listModel;
     
-    public BufferedReader in;
+    public static BufferedReader in;
     public static PrintWriter out;
  
     private static final String addString = "Chat";
     static String username;
-    static int groupNumber = 1;
+    int groupNumber;
+    
+    static ArrayList<Chat_handler> chats = new ArrayList <Chat_handler> ();
  
     public ContactList() {
         super(new BorderLayout());
@@ -63,16 +66,14 @@ public class ContactList extends JPanel
                     return;
                 }
 
-                out.println("NEWCHAT");
-                for (int i=1; i<list.getSelectedIndices().length; i++)
+                out.println("NEWCHAT"); //send username of user that want to chat with 
+                out.println(username);
+                for(int i=0; i<list.getSelectedIndices().length;i++)
                 {
-                    out.println(list.getSelectedValue());
+                    out.println(list.getSelectedValuesList().get(i));
                 }
                 out.println("ENDSEND");
 
-                out.println()
-                Chat_handler chat_handler = new Chat_handler(out, username, groupNumber);
-                chat_handler.start();
             }
         });
     }
@@ -128,6 +129,29 @@ public class ContactList extends JPanel
                 
                 String[] CurrentUsers = TEMP1.split(", ");
                 list.setListData(CurrentUsers);
+            }
+
+            else if (MESSAGE.startsWith("MESSAGE"))
+            {
+                MESSAGE = in.readLine(); //group number
+                String chatMessage = in.readLine(); //read chat message 
+                
+                for(int i=0; i<chats.size(); i++)
+                {
+                    if (Integer.parseInt(MESSAGE) == groupNumber)
+                    {
+                        chats.get(i).printMessage(chatMessage);
+                    }
+                }
+                
+            }
+            
+            else if (MESSAGE.startsWith("GETGROUPNUMBER"))
+            {   
+                MESSAGE = in.readLine(); //read group number
+                groupNumber = Integer.parseInt(MESSAGE);
+                Chat_handler chat_handler = new Chat_handler(out, username, groupNumber);
+                chats.add(chat_handler);
             }
         }         
     }
