@@ -34,50 +34,29 @@ public class Chat_handler extends Thread{
     public Chat_handler(final PrintWriter out, final String username, final int GroupNumber)
     {	
         //Create and set up the window.
-        JFrame frame = new JFrame(GroupNumber + username + "Chat Client");
+        JFrame frame = new JFrame(GroupNumber + " " + username +"'s "+ "chat client");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         //Set up the content pane.
         addComponentsToPane(frame.getContentPane());
         frame.pack();
         frame.setVisible(true);
         textField.setEditable(true);
+        
         textField.addActionListener(new ActionListener()
         {
-            public void actionPerformed(ActionEvent e)
+            public void actionPerformed(ActionEvent e) //press enter to send message to serverthread
             {
-                out.println("MESSAGE");
-                out.println(GroupNumber);
-                out.println(username + ": " + textField.getText());
+                out.println("MESSAGE"); //send MESSAGE as identifier 
+                out.println(GroupNumber); //send group number 
+                out.println(username + ": " + textField.getText()); //send text in text field 
                 textField.setText("");
             }
         });
     }
     
-    public void printMessage(String message)
+    public void printMessage(String message) //method to add message to textarea
     {
     	textArea.append(message + "\n");
-    }
-    
-    public int getGroupNumber()
-    {
-    	return this.GroupNumber;
-    }
-    
-    void createAndShowGUI() 
-    {
-        //Create and set up the window.
-        JFrame frame = new JFrame("Chat Client");
-        //frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        //Set up the content pane.
-        addComponentsToPane(frame.getContentPane());
-        frame.pack();
-        frame.setVisible(true);
-        textField.setEditable(true);
-    }
-   
-    public void run()
-    {
-        createAndShowGUI();
     }
 }
 

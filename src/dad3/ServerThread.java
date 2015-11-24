@@ -35,17 +35,17 @@ public class ServerThread extends Thread
             while (true)
             {
             	Server.status.append("Incoming connection.\n");
-                out.println("SUBMITNAME");
+                out.println("SUBMITNAME"); //ask user to enter username 
                 username = in.readLine();
                 if (username == null)
                 {
                     return;
                 }
-                synchronized (usernames)
+                synchronized (usernames) //make sure username is not repeated 
                 {
                     if (!usernames.contains(username))
                     {
-                        usernames.add(username);
+                        usernames.add(username); // if not repeated, add in username 
                         break;
                     }
                 }
@@ -57,46 +57,46 @@ public class ServerThread extends Thread
             
             for (PrintWriter writer : writers) //send usernames to clients 
             {
-                System.out.println(usernames);
-                writer.println("###" + usernames);
+                System.out.println(usernames); //send whole arraylist of username to clients 
+                writer.println("###" + usernames); //send ### as identifier to process usernames 
                 writer.flush();
             }
             
-            while (true)
+            while (true) //keep looping to check for inputs 
             {
-                String input = in.readLine();
+                String input = in.readLine(); //read content that is send in from clients 
                 if (input == null)
                 {
                     return;
                 }            
                 
-                else if (input.startsWith("NEWCHAT"))
+                else if (input.startsWith("NEWCHAT")) //if start a chat 
                 {
-                    ArrayList<String> chatUsers = new ArrayList<String>();
-                    ArrayList<PrintWriter> chatUsersWriters = new ArrayList<PrintWriter>();
+                    ArrayList<String> chatUsers = new ArrayList<String>(); //array list to store usernames 
+                    ArrayList<PrintWriter> chatUsersWriters = new ArrayList<PrintWriter>(); //arraylist to store print writers for users 
                     while (true)
                     {
                         input = in.readLine();
-                        if (input.startsWith("ENDSEND"))
+                        if (input.startsWith("END"))
                         {
                             break;
                         }
 
-                        for(int i =0; i<usernames.size();i++)
+                        for(int i =0; i<usernames.size();i++) //loop all usersnames in server 
                         {
-                            if(input.equals(usernames.get(i)))
+                            if(input.equals(usernames.get(i))) //if matching username is found 
                             {
                                 chatUsers.add(usernames.get(i)); //add usernames to another arraylist
-                                chatUsersWriters.add(writers.get(i));
+                                chatUsersWriters.add(writers.get(i)); //get the print writer for the username also 
                             }
                         }
                     }
 
-                    for(int i=0;i <chatUsersWriters.size();i++)
+                    for(int i=0;i <chatUsersWriters.size();i++) //loop through the selected printwriters of people in the chat 
                     {
-                        PrintWriter tempWriter = chatUsersWriters.get(i);
-                        tempWriter.println("GETGROUPNUMBER");
-                        tempWriter.println(groupNumber);
+                        PrintWriter tempWriter = chatUsersWriters.get(i); //get printwriter of a user
+                        tempWriter.println("GETGROUPNUMBER"); //send GETGROUPNUMBER identifier to all clients 
+                        tempWriter.println(groupNumber); //send group number 
                     }
                     groupNumber++;
                 }
@@ -106,11 +106,11 @@ public class ServerThread extends Thread
                     input = in.readLine(); //receive group number 
                     String chatMessage = in.readLine(); //receive message from client
                     
-                    for (PrintWriter writer : writers)
+                    for (PrintWriter writer : writers) //loop through all print writers 
                     {
-                        writer.println("MESSAGE");
+                        writer.println("MESSAGE"); //send MESSAGE identifier 
                         writer.println(input);  //print group number 
-                        writer.println(chatMessage);
+                        writer.println(chatMessage); //send actual chat message 
                     }
                 }
                 

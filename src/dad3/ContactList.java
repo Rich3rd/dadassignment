@@ -61,35 +61,35 @@ public class ContactList extends JPanel
         {
             public void actionPerformed(ActionEvent e)
             {
-                if (list.isSelectionEmpty() == true)
+                if (list.isSelectionEmpty() == true) //if nothing is selected, do nothing 
                 {
                     return;
                 }
 
                 out.println("NEWCHAT"); //send username of user that want to chat with 
                 out.println(username);
-                for(int i=0; i<list.getSelectedIndices().length;i++)
+                for(int i=0; i<list.getSelectedIndices().length;i++) //get how many username the user has selected
                 {
-                    out.println(list.getSelectedValuesList().get(i));
+                    out.println(list.getSelectedValuesList().get(i)); //get names of selected people and send to server 
                 }
-                out.println("ENDSEND");
+                out.println("END");
 
             }
         });
     }
  
-    private String askName()
+    private String askName() //method to ask username from user 
         {
             return JOptionPane.showInputDialog(null, "Choose a screen name:", "Screen name selection", JOptionPane.PLAIN_MESSAGE);
         }
     
-    private String askServerIPAddress()
+    private String askServerIPAddress() //ask server ip from user 
         {
             return JOptionPane.showInputDialog(null, "Enter IP Address of the Server:", "Welcome to the Chat Messenger", JOptionPane.QUESTION_MESSAGE);
         }
 
 
-    static void createAndShowGUI() {
+    static void createAndShowGUI() { //show contact list GUI
         //Create and set up the window.
         JFrame frame = new JFrame("Contact list");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -112,46 +112,46 @@ public class ContactList extends JPanel
         in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         out = new PrintWriter(socket.getOutputStream(), true);
 
-        while(true)
+        while(true) //keeps looping to check for inputs from chat client 
         {
             String MESSAGE = in.readLine();
             if (MESSAGE.startsWith("SUBMITNAME"))
             {
-                username = askName(); //send username to server
-                out.println(username);
+                username = askName(); 
+                out.println(username);  //send username to server
             }
             
             else if(MESSAGE.startsWith("###"))      //set usernames to display on JList
             {
-                String TEMP1 = MESSAGE.substring(3);
-                TEMP1 = TEMP1.replace("[", "");
+                String TEMP1 = MESSAGE.substring(3); 
+                TEMP1 = TEMP1.replace("[", ""); //delete characters from the arraylist
                 TEMP1 = TEMP1.replace("]", "");
                 
-                String[] CurrentUsers = TEMP1.split(", ");
-                list.setListData(CurrentUsers);
+                String[] CurrentUsers = TEMP1.split(", "); //split arraylist into arrays
+                list.setListData(CurrentUsers); //set usernames to JList
             }
 
             else if (MESSAGE.startsWith("MESSAGE"))
             {
-                MESSAGE = in.readLine(); //group number
+                MESSAGE = in.readLine(); //read group number
                 String chatMessage = in.readLine(); //read chat message 
                 
-                for(int i=0; i<chats.size(); i++)
+                for(int i=0; i<chats.size(); i++) //loop to check the group number the user is in 
                 {
-                    if (Integer.parseInt(MESSAGE) == groupNumber)
+                    if (Integer.parseInt(MESSAGE) == groupNumber) //if same group number,
                     {
-                        chats.get(i).printMessage(chatMessage);
+                        chats.get(i).printMessage(chatMessage); //then put chat at chat window
                     }
                 }
                 
             }
             
-            else if (MESSAGE.startsWith("GETGROUPNUMBER"))
+            else if (MESSAGE.startsWith("GETGROUPNUMBER")) //receive group number then start chat 
             {   
                 MESSAGE = in.readLine(); //read group number
-                groupNumber = Integer.parseInt(MESSAGE);
-                Chat_handler chat_handler = new Chat_handler(out, username, groupNumber);
-                chats.add(chat_handler);
+                groupNumber = Integer.parseInt(MESSAGE); //cast to integer
+                Chat_handler chat_handler = new Chat_handler(out, username, groupNumber); //open chat window 
+                chats.add(chat_handler); //open chat window 
             }
         }         
     }
